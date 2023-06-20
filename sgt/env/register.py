@@ -37,7 +37,7 @@ class SGTRegistry:
         """
         _name=obj.__name__
         if _name in self._obj_map.keys():
-            logger.error("The Module({0}) is existed!".format(_name))
+            logger.error("The Module({0}) is existed!".format(_name), stack_info=True)
             exit(1)
         self._obj_map[_name]=obj
 
@@ -46,7 +46,7 @@ class SGTRegistry:
             obj_name: 模块名称
         """
         if obj_name not in self._obj_map.keys():
-            logger.error("The Module({0}) isn't existed!".format(obj_name))
+            logger.error("The Module({0}) isn't existed!".format(obj_name), stack_info=True)
             exit(1)
         return self._obj_map[obj_name]
     
@@ -54,6 +54,13 @@ class SGTRegistry:
         """获取已注册模块数量
         """
         return len(self._obj_map.keys())
+    
+    def export_module_list(self):
+        """导出已注册模块
+        """
+        _module_list=self._obj_map.keys()
+        sorted(_module_list)
+        return _module_list
 
 # 构建注册器
 register=SGTRegistry()

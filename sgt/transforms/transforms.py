@@ -20,6 +20,13 @@ from ..env.logger import create_logger
 from ..env.register import register
 logger=create_logger(log_name=__name__)
 
+__all__=[
+    'EncodeImage',
+    'Normalize',
+    'ResizeImage',
+    'FlipImage'
+]
+
 class BaseOperator:
     """预处理算子基类
     """
@@ -47,30 +54,83 @@ class BaseOperator:
 @register
 class EncodeImage(BaseOperator):
     """读取图像预处理
+        sample base data struct:
+            {
+                'image_path': str,
+                'label_path': str,
+                # add image + image_shape
+                'image': numyp.ndarray,
+                'image_shape': list,
+                # add label + label_shape
+                'label': numyp.ndarray,
+                'label_shape': list,
+            }
     """
-    def __init__(self, image_path):
+    def __init__(self, to_rgb=False):
         super(EncodeImage, self).__init__("EncodeImage")
+        self._to_rgb=to_rgb
     
     def _apply_image(self, sample):
-        pass
+        _img_path=sample['image_path']
+        _img=cv2.imread(_img_path)
+        if self._to_rgb:
+            _img=cv2.cvtColor(_img, cv2.COLOR_BGR2RGB)
+        sample['image']=_img
+        if len(_img.shape) == 2:
+            sample['image_shape']=[_img.shape[0], _img.shape[1], 1] # H, W, C
+        else:
+            sample['image_shape']=list(_img.shape) # H, W, C
+        return sample
 
     def _apply_label(self, sample):
-        pass
+        _img_path=sample['label_path']
+        _img=cv2.imread(_img_path)
+        if self._to_rgb:
+            _img=cv2.cvtColor(_img, cv2.COLOR_BGR2RGB)
+        sample['label']=_img
+        if len(_img.shape) == 2:
+            sample['label_shape']=[_img.shape[0], _img.shape[1], 1] # H, W, C
+        else:
+            sample['label_shape']=list(_img.shape) # H, W, C
+        return sample
 
 @register
 class Normalize(BaseOperator):
     """归一化预处理
+        sample base data struct:
+            {
+                'image_path': str,
+                'label_path': str,
+                'image': numyp.ndarray,
+                'image_shape': list,
+                'label': numyp.ndarray,
+                'label_shape': list,
+            }
     """
     def __init__(self,
                  means=[127.5, 127.5, 127.5],
                  stds=[0, 0, 0]):
+        """初始化函数
+            means: 归一化各通道的均值参数
+            stds: 归一化各通道的标准方差参数
+        """
         super(Normalize, self).__init__("Normalize")
+        self._means=np.asarray(means)
+        self._stds=np.asarray(stds)
     
     def _apply_image(self, sample):
-        pass
+        _img=sample['image']
+        _img+=self._means
+        _img/=self._stds
+        sample['image']=_img
+        return sample
 
     def _apply_label(self, sample):
-        pass
+        _img=sample['label']
+        _img+=self._means
+        _img/=self._stds
+        sample['label']=_img
+        return sample
 
 @register
 class ResizeImage(BaseOperator):
@@ -78,14 +138,48 @@ class ResizeImage(BaseOperator):
     """
     def __init__(self,
                  target_size=[32, 32],
-                 by_short=False):
+                 by_short=False,
+                 interpolation=cv2.INTER_LINEAR):
         super(ResizeImage, self).__init__("ResizeImage")
+        self._target_size=target_size
+        self._by_short=by_short
+        self._interpolation=interpolation
     
     def _apply_image(self, sample):
-        pass
+        _img=sample['image']
+        _img_shape=[]
+        if self._by_short: # 按照图像实际短边与目标缩放的大小进行缩放
+            _h, _w=_img.shape[:2]
+            _min_hw=min(_h, _w) # 取短边
+            _scaler=float(min(self.target_size)) / float(_min_hw) # 计算短边映射比例
+            _h=int(_scaler*_h) # 修正宽高大小
+            _w=int(_scaler*_w)
+            _img=cv2.resize(_img, [_h, _w], interpolation=self._interpolation)
+            _img_shape=[_h, _w, sample['image_shape'][-1]]
+        else:
+            _img=cv2.resize(_img, self._target_size, interpolation=self._interpolation)
+        _img_shape=[self._target_size[0], self._target_size[1], sample['image_shape'][-1]]
+        sample['image']=_img
+        sample['image_shape']=_img_shape
+        return sample
 
     def _apply_label(self, sample):
-        pass
+        _img=sample['label']
+        _img_shape=[]
+        if self._by_short: # 按照图像实际短边与目标缩放的大小进行缩放
+            _h, _w=_img.shape[:2]
+            _min_hw=min(_h, _w) # 取短边
+            _scaler=float(min(self.target_size)) / float(_min_hw) # 计算短边映射比例
+            _h=int(_scaler*_h) # 修正宽高大小
+            _w=int(_scaler*_w)
+            _img=cv2.resize(_img, [_h, _w], interpolation=self._interpolation)
+            _img_shape=[_h, _w, sample['label_shape'][-1]]
+        else:
+            _img=cv2.resize(_img, self._target_size, interpolation=self._interpolation)
+        _img_shape=[self._target_size[0], self._target_size[1], sample['label_shape'][-1]]
+        sample['label']=_img
+        sample['label_shape']=_img_shape
+        return sample
 
 @register
 class FlipImage(BaseOperator):
@@ -93,13 +187,34 @@ class FlipImage(BaseOperator):
     """
     def __init__(self,
                  flip_mode=0):
+        """
+            flip_mode: 0-垂直翻转, 1-水平翻转, 2-水平+垂直同时翻转
+        """
         super(FlipImage, self).__init__("FlipImage")
+        if flip_mode not in [0, 1, -1]:
+            logger.error(
+                            "The flip_mode should choice in {0}, but not it is {1}.".format(
+                            [0, 1, -1], flip_mode),
+                            stack_info=True
+                        )
+            exit(1)
+        self._flip_mode=flip_mode
     
     def _apply_image(self, sample):
-        pass
+        _img=sample['image']
+        _img=cv2.flip(_img, flipCode=self._flip_mode)
+        _h, _w=_img.shape[:2]
+        sample['image']=_img
+        sample['image_shape']=[_h, _w, sample['image_shape'][-1]]
+        return sample
 
     def _apply_label(self, sample):
-        pass
+        _img=sample['label']
+        _img=cv2.flip(_img, flipCode=self._flip_mode)
+        _h, _w=_img.shape[:2]
+        sample['label']=_img
+        sample['label_shape']=[_h, _w, sample['label_shape'][-1]]
+        return sample
 
 @register
 class CenterCropImage(BaseOperator):
