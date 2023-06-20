@@ -39,19 +39,32 @@ class SubgraphDrawing:
 
     def _check_targets_length(self, targets):
         if len(targets) != self._graph_shape[0]:
-            logger.warning(
+            logger.error(
                 "The Subgraph Drawing Plot Meet | len(targets) != self._graph_shape[0] |, "
-                "which make the work only support the number of subgraph"
-                " by self._graph_shape[0]({0} not {1}).".format(len(targets), self._graph_shape[0])
+                "which only support the number of subgraph"
+                " by self._graph_shape[0]({0} not {1}).".format(len(targets), self._graph_shape[0]),
+                stack_info=True
             )
+            exit(1)
     
     def _check_labels_length(self, labels):
-        if len(labels) != self._graph_shape[1]:
-            logger.warning(
-                "The Subgraph Drawing Plot Meet | len(labels) != self._graph_shape[1] |, "
-                "which make the work only support the number of subgraph"
-                " by self._graph_shape[1]({0} not {1}).".format(len(labels), self._graph_shape[1])
+        if len(labels) != self._graph_shape[0]:
+            logger.error(
+                "The Subgraph Drawing Plot Meet | len(labels) != self._graph_shape[0] |, "
+                "which only support the number of subgraph"
+                " by self._graph_shape[0]({0} not {1}).".format(len(labels), self._graph_shape[0]),
+                stack_info=True
             )
+            exit(1)
+        for i in range(len(labels)):
+            if len(labels[i]) != self._graph_shape[1]:
+                logger.error(
+                    "The Subgraph Drawing Plot Meet | len(labels[{0}]) != self._graph_shape[1] |, "
+                    "which only support the number of subgraph"
+                    " by self._graph_shape[1]({1} not {2}).".format(i, len(labels[i]), self._graph_shape[1]),
+                    stack_info=True
+                )
+                exit(1)
     
     def _check_targets_valid(self, targets):
         self._check_targets_length(targets)
@@ -68,28 +81,53 @@ class SubgraphDrawing:
 
     def _check_labels_valid(self, labels):
         self._check_labels_length(labels)
-        _shape=labels[0].shape
-        for _idx, _t in enumerate(labels):
-            if _idx >= self._graph_shape[1]:
-                break
-            if _t.shape != _shape:
-                logger.error(
-                    "The SubgraphDrawing only support the shape of labels is equal.",
-                    stack_info=True
-                )
-                exit(1)
+        for i in range(len(labels)):
+            _shape=labels[i][0].shape
+            for _idx, _t in enumerate(labels[i]):
+                if _idx >= self._graph_shape[1]:
+                    break
+                if _t.shape != _shape:
+                    logger.error(
+                        "The SubgraphDrawing only support the shape of labels is equal.",
+                        stack_info=True
+                    )
+                    exit(1)
 
     def plot(self,
              targets: List[np.ndarray],
-             labels: List[np.ndarray],
-             titles: List[str]=None):
+             labels: List[List[np.ndarray]],
+             titles: List[str]=None,
+             save_path: str=None,
+             plot_show: bool=False) -> None:
         """子图模式绘图接口
             targets: 绘制目标图像, 位于左子图
             labels: 绘制标签图像, 位于右子图
             titles: taget-label对的绘图标题
+            save_path: 保存路径
         """
         self._check_targets_valid(targets=targets)
         self._check_labels_valid(labels=labels)
+        plt.close()
+        plt.figure(figsize=self._graph_fig_size)
+        _title_sub_str=['target', 'label']
+        for i in range(self._graph_shape[0]):
+            for j in range(self._graph_shape[1]):
+                _img= labels[i][j-1] if j > 0 else targets[i]
+                _title=titles[i] if titles is not None else str(i)
+                _title=_title + '-'
+                _title=_title_sub_str[1] if j > 0 else _title_sub_str[0]
+                plt.subplot(
+                    i, j,
+                    xlabel='{0}-{1}'.format(i+1, j+1),
+                    title=_title
+                )
+                plt.imshow(_img)   
+                plt.xticks([])
+                plt.yticks([])
+        if save_path != None:
+            plt.imsave(fname=save_path)
+        if plot_show:
+            plt.show()
 
 
 
