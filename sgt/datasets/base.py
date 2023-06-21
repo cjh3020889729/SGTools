@@ -40,17 +40,17 @@ class BaseDataset(Dataset):
 
         self._transforms=None
 
-    def parse_dataset(self):
+    def parse_dataset(self) -> None:
         """解析data_txt添加样本图像path列表
         """
         NotImplementedError("The Dataset Must Need To Implement The `parse_dataset` function!")
     
-    def set_sample_transforms(self, transforms):
+    def set_sample_transforms(self, transforms: List[Any]) -> None:
         """设置采样预处理方法
         """
         self._transforms=transforms
     
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> None:
         """采样一个样本
             {
                 'image_path':
@@ -68,7 +68,7 @@ class BaseDataset(Dataset):
             sample=self._transforms(sample)
         return sample
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._images)
 
 @register
@@ -80,7 +80,7 @@ class TestDataset(Dataset):
 
         self._transforms=None
 
-    def parse_dataset(self):
+    def parse_dataset(self) -> None:
         """解析image_dir中的图片添加到path列表
         """
         if not os.path.exists(self._image_dir):
@@ -97,12 +97,12 @@ class TestDataset(Dataset):
         logger.info("The TestDataset Has Collect Image samples: {0}.".format(len(_images)))
         logger.info("The TestDataset Load Data Cost Time: {0} s.".format(time()-_start_time))
     
-    def set_sample_transforms(self, transforms):
+    def set_sample_transforms(self, transforms: List[Any]) -> None:
         """设置采样预处理方法
         """
         self._transforms=transforms
     
-    def __getitem__(self, idx):
+    def __getitem__(self, idx:int) -> None:
         """采样一个样本
             {
                 'image_path':
@@ -120,7 +120,7 @@ class TestDataset(Dataset):
             sample=self._transforms(sample)
         return sample
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._images)
 
 class BaseDataLoader:
@@ -157,7 +157,7 @@ class BaseDataLoader:
             num_workers=worker_num)
         self._loader = iter(self._dataloader)
     
-    def __len__(self):
+    def __len__(self) -> int:
         """每轮训练迭代次数
         """
         return len(self._batch_sampler)

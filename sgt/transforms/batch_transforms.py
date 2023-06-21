@@ -14,7 +14,7 @@
 import os, sys
 import cv2
 import numpy as np
-from typing import List, Any
+from typing import List, Any, Dict
 
 from ..env.logger import create_logger
 from ..env.register import register
@@ -31,7 +31,7 @@ class BatchCompose:
         self._name="BatchCompose"
         self._transforms=transforms
     
-    def __call__(self, samples):
+    def __call__(self, samples: List[Any]) -> Dict:
         for _t in self._transforms:
             samples=_t(samples)
         batch_data={}

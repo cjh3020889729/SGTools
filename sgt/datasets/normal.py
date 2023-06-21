@@ -37,7 +37,7 @@ class NormalDataset(BaseDataset):
                             is_train_or_eval
                         )
     
-    def parse_dataset(self):
+    def parse_dataset(self) -> None:
         """解析data_txt添加样本图像path列表
             self._images
             self._labels
