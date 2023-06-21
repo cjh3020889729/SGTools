@@ -3,6 +3,7 @@ import cv2
 from sgt.env.logger import create_logger
 from sgt.transforms import transforms, batch_transforms
 from sgt.visualizes.subs_plot import SubgraphDrawing
+from sgt.visualizes.mesh3d_plot import Mesh3DDrawing
 from sgt.env.register import register
 
 from sgt.utils.read_utils import read_dir_images
@@ -13,6 +14,21 @@ from sgt.datasets.normal import TrainNormalDataset
 
 logger = create_logger(log_name=__name__)
 logger.info("Test Module is Loaded!")
+
+
+# # 测试Mesh偏差差值图可视化
+# images_img_path=read_dir_images(img_dir='datasets/normal/images')[:2]
+# # labels_img_path=read_dir_images(img_dir='datasets/normal/labels')[:1]
+# images_img=[cv2.cvtColor(cv2.imread(i), cv2.COLOR_BGR2RGB) for i in images_img_path]
+# # labels_img=[cv2.cvtColor(cv2.imread(i), cv2.COLOR_BGR2RGB) for i in labels_img_path]
+
+# mesh3d_plot=Mesh3DDrawing()
+# # 灰度图绘制测试
+# # mesh3d_plot.plot(images_img[0][:, :, 0], images_img[1][:, :, 0])
+# # RGB图绘制测试: 只有保存路径为None，才及时可视化显示图像数据
+# mesh3d_plot.plot(images_img[0], images_img[1],
+#                 #  save_path='outputs/visual_imgs/mesh3d_plot.png',
+#                  plot_show=True)
 
 # 测试Test数据集
 # test_dataset=TestDataset(

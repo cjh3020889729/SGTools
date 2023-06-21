@@ -1,5 +1,6 @@
 yaml
-matplotlib
+matplotlib==3.5.0
 numpy
 python-opencv
 visualdl
+pyvista==0.38.6
