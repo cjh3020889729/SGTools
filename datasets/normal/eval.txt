@@ -1,0 +1,3 @@
+images/7.png labels/7.png
+images/8.png labels/8.png
+images/9.png labels/9.png

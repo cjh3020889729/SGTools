@@ -14,11 +14,12 @@
 import os, sys
 import numpy as np
 import cv2
+from typing import List
 
 from ..env.logger import create_logger
 logger=create_logger(log_name=__name__)
 
-def read_dir_images(img_dir: str):
+def read_dir_images(img_dir: str) -> List[str]:
     """读取一个目录下的所有图片路径
         img_dir: 图片目录
     """

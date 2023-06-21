@@ -12,12 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os, sys
-import copy
 import cv2
 import numpy as np
+from typing import List, Any
 
 from ..env.logger import create_logger
 from ..env.register import register
 logger=create_logger(log_name=__name__)
 
-logger.info("(To Finished)Batch Transform Module is Loaded Successly!")
+@register
+class BatchCompose:
+    """批量预处理组合器
+    """
+    def __init__(self, transforms: List[Any]=[]):
+        """
+            transforms: 由批量预处理组成的列表
+        """
+        self._name="BatchCompose"
+        self._transforms=transforms
+    
+    def __call__(self, samples):
+        for _t in self._transforms:
+            samples=_t(samples)
+        batch_data={}
+        for k in samples[0].keys():
+            _data=[]
+            for _sample in samples:
+                _data.append(_sample[k])
+            _data=np.stack(_data, axis=0)
+            batch_data[k]=_data
+        return batch_data
+
+    def __str__(self) -> str:
+        return self._name
+    
+    def __repr__(self) -> str:
+        return self._name
+
+
+logger.info("Batch Transform Module is Loaded Successly!")

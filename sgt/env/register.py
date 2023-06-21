@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, List
 from .logger import create_logger
 logger=create_logger(log_name=__name__)
 
@@ -19,19 +19,19 @@ class SGTRegistry:
     """模块注册器
         register=SGTRegistry()
 
-        @register()
+        @register
         class XXXModule:
             def __init__(self):
                 pass
     """
-    def __init__(self, name='sgtools') -> None:
+    def __init__(self, name: str='sgtools') -> None:
         """模块注册器初始化
             name: 注册器名称——默认为sgtools
         """
         self._name=name
         self._obj_map={}
     
-    def __call__(self, obj) -> Any:
+    def __call__(self, obj: Any) -> Any:
         """函数调用支持
             obj: 注册模块类
         """
@@ -40,8 +40,9 @@ class SGTRegistry:
             logger.error("The Module({0}) is existed!".format(_name), stack_info=True)
             exit(1)
         self._obj_map[_name]=obj
+        return obj # 若不返回，将导致智能通过注册器访问
 
-    def get(self, obj_name):
+    def get(self, obj_name: str) -> Any:
         """获取已注册模块
             obj_name: 模块名称
         """
@@ -50,12 +51,12 @@ class SGTRegistry:
             exit(1)
         return self._obj_map[obj_name]
     
-    def __len__(self):
+    def __len__(self) -> int:
         """获取已注册模块数量
         """
         return len(self._obj_map.keys())
     
-    def export_module_list(self):
+    def export_module_list(self) -> List[str]:
         """导出已注册模块
         """
         _module_list=self._obj_map.keys()

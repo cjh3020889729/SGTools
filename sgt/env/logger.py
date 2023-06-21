@@ -18,7 +18,9 @@ import coloredlogs
 __LOGGER_NAMES=[]
 __LOG_DIR=None
 
-def create_logger(log_name: str=None, log_dir: str='logs', is_root=False):
+def create_logger(log_name: str=None,
+                  log_dir: str='logs',
+                  is_root: bool=False) -> logging.Logger:
     """创建日志记录器
         log_name: 日志名称——若为None, 则为当前日志创建日期
         log_dir: 日志保存目录
@@ -48,7 +50,7 @@ def create_logger(log_name: str=None, log_dir: str='logs', is_root=False):
     handler_file.setLevel(logging.DEBUG)
     handler_file.setFormatter(
         logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt="%m/%d/%Y %H:%M:%S %p"
+            '%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S %p"
         )
     )
 

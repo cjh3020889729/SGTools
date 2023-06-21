@@ -1,0 +1,6 @@
+images/1.png labels/1.png
+images/2.png labels/2.png
+images/3.png labels/3.png
+images/4.png labels/4.png
+images/5.png labels/5.png
+images/6.png labels/6.png

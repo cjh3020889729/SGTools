@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os, sys
-import copy
 import cv2
 import numpy as np
+from copy import deepcopy
+from typing import List, Any
 
 from ..env.logger import create_logger
 from ..env.register import register
@@ -40,9 +41,32 @@ class BaseOperator:
         NotImplementedError("Please Implement The Operator's({0}) _apply_label function!".format(self._name))
 
     def __call__(self, sample):
-        _sample=copy.deepcopy(sample)
+        _sample=deepcopy(sample)
         _sample=self._apply_image(_sample)
         _sample=self._apply_label(_sample)
+        return _sample
+
+    def __str__(self) -> str:
+        return self._name
+    
+    def __repr__(self) -> str:
+        return self._name
+
+@register
+class Compose:
+    """预处理组合器
+    """
+    def __init__(self, transforms: List[Any]=[]):
+        """
+            transforms: 由预处理组成的列表
+        """
+        self._name="Compose"
+        self._transforms=transforms
+    
+    def __call__(self, sample):
+        _sample=deepcopy(sample)
+        for _t in self._transforms:
+            _sample=_t(_sample)
         return _sample
 
     def __str__(self) -> str:
@@ -80,6 +104,7 @@ class EncodeImage(BaseOperator):
             sample['image_shape']=[_img.shape[0], _img.shape[1], 1] # H, W, C
         else:
             sample['image_shape']=list(_img.shape) # H, W, C
+        del sample['image_path']
         return sample
 
     def _apply_label(self, sample):
@@ -92,6 +117,7 @@ class EncodeImage(BaseOperator):
             sample['label_shape']=[_img.shape[0], _img.shape[1], 1] # H, W, C
         else:
             sample['label_shape']=list(_img.shape) # H, W, C
+        del sample['label_path']
         return sample
 
 @register
@@ -109,7 +135,7 @@ class Normalize(BaseOperator):
     """
     def __init__(self,
                  means=[127.5, 127.5, 127.5],
-                 stds=[0, 0, 0]):
+                 stds=[127.5, 127.5, 127.5]):
         """初始化函数
             means: 归一化各通道的均值参数
             stds: 归一化各通道的标准方差参数
@@ -119,15 +145,15 @@ class Normalize(BaseOperator):
         self._stds=np.asarray(stds)
     
     def _apply_image(self, sample):
-        _img=sample['image']
-        _img+=self._means
+        _img=sample['image'].astype('float32')
+        _img-=self._means
         _img/=self._stds
         sample['image']=_img
         return sample
 
     def _apply_label(self, sample):
-        _img=sample['label']
-        _img+=self._means
+        _img=sample['label'].astype('float32')
+        _img-=self._means
         _img/=self._stds
         sample['label']=_img
         return sample
