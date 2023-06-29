@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from . import transforms
-from transforms import *
+from . import trainer_seg
+from trainer_seg import *
 
-from . import batch_transforms
-from batch_transforms import *
+from . import trainer_gan
+from trainer_gan import *
 
-__all__=transforms.__all__ + \
-        batch_transforms.__all__
+
+__all__=trainer_seg.__all__ + \
+        trainer_gan.__all__

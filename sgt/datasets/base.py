@@ -27,6 +27,14 @@ logger=create_logger(log_name=__name__)
 
 from paddle.io import Dataset, DataLoader, DistributedBatchSampler
 
+__all__=[
+    'BaseDataset',
+    'TestDataset',
+    'BaseDataLoader',
+    'TrainDataLoader',
+    'EvalDataLoader',
+    'TestDataLoader'
+]
 
 class BaseDataset(Dataset):
     def __init__(self,

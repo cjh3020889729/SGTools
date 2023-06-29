@@ -24,6 +24,12 @@ from ..env.logger import create_logger
 from ..env.register import register
 logger=create_logger(log_name=__name__)
 
+__all__=[
+    'NormalDataset',
+    'TrainNormalDataset',
+    'EvalNormalDataset'
+]
+
 from ..datasets.base import BaseDataset
 
 class NormalDataset(BaseDataset):

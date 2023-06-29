@@ -20,6 +20,11 @@ from ..env.logger import create_logger
 from ..env.register import register
 logger=create_logger(log_name=__name__)
 
+
+__all__=[
+    'SubgraphDrawing'
+]
+
 @register
 class SubgraphDrawing:
     """子图对照可视化

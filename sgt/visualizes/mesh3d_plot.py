@@ -22,6 +22,10 @@ from ..env.logger import create_logger
 from ..env.register import register
 logger=create_logger(log_name=__name__)
 
+__all__=[
+    'Mesh3DDrawing'
+]
+
 @register
 class Mesh3DDrawing:
     """三维Mesh偏差可视化

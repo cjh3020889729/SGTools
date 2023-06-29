@@ -20,6 +20,11 @@ from ..env.logger import create_logger
 from ..env.register import register
 logger=create_logger(log_name=__name__)
 
+__all__ = [
+    'BatchCompose'
+]
+
+
 @register
 class BatchCompose:
     """批量预处理组合器
